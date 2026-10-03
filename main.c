@@ -76,44 +76,24 @@ void Add(List* list, Item* item)
 
 void Insert(List* list, Item* item, int ind)
 {
-    Item* cur = list->head;
-    Item* prev_item = NULL;
-    int i = 0;
     if (list == NULL || item == NULL) return;
-    if (ind < 0)
+    Item* cur = GetItem(list, ind);
+    if (cur == NULL)
     {
-        free(item);
+        Add(list, item);
         return;
     }
-    while (cur != NULL && i < ind)
-    {
-        prev_item = cur;
-        cur = cur->next;
-        i++;
-    }
-    if (i < ind)
-    {
-        free(item);
-        return;
-    }
-    item->prev = prev_item;
     item->next = cur;
-    if (prev_item != NULL)
+    item->prev = cur->prev;
+    if (cur->prev != NULL)
     {
-        prev_item->next = item;
+        cur->prev->next = item;
     }
     else
     {
         list->head = item;
     }
-    if (cur != NULL)
-    {
-        cur->prev = item;
-    }
-    else
-    {
-        list->tail = item;
-    }
+    cur->prev = item;
 }
 
 Item* Remove(List* list, int ind)
