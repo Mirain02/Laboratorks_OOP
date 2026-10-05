@@ -1,127 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
-
-typedef struct Item
-{
-    struct Item* prev;
-    struct Item* next;
-} Item;
-
-typedef struct List
-{
-    Item* head;
-    Item* tail;
-} List;
-
-int Count(const List* list)
-{
-    int count = 0;
-    const Item* cur;
-    if (list == NULL) return 0;
-    cur = list->head;
-    while (cur != NULL)
-    {
-        count++;
-        cur = cur->next;
-    }
-    return count;
-}
-
-Item* GetItem(const List* list, int ind)
-{
-    Item* cur;
-    int i = 0;
-    if (list == NULL || ind < 0) return NULL;
-    cur = list->head;
-    while (cur != NULL && i < ind)
-    {
-        cur = cur->next;
-        i++;
-    }
-    return cur;
-}
-
-int GetIndex(const List* list, const Item* item)
-{
-    const Item* cur;
-    int ind = 0;
-    if (list == NULL || item == NULL) return -1;
-    cur = list->head;
-    while (cur != NULL)
-    {
-        if (cur == item) return ind;
-        cur = cur->next;
-        ind++;
-    }
-    return -1;
-}
-
-void Add(List* list, Item* item)
-{
-    if (list == NULL || item == NULL) return;
-    item->next = NULL;
-    item->prev = list->tail;
-    if (list->head == NULL)
-    {
-        list->head = item;
-        list->tail = item;
-    }
-    else
-    {
-        list->tail->next = item;
-        list->tail = item;
-    }
-}
-
-void Insert(List* list, Item* item, int ind)
-{
-    if (list == NULL || item == NULL) return;
-    Item* cur = GetItem(list, ind);
-    if (cur == NULL)
-    {
-        Add(list, item);
-        return;
-    }
-    item->next = cur;
-    item->prev = cur->prev;
-    if (cur->prev != NULL)
-    {
-        cur->prev->next = item;
-    }
-    else
-    {
-        list->head = item;
-    }
-    cur->prev = item;
-}
-
-Item* Remove(List* list, int ind)
-{
-    Item* item;
-    if (list == NULL) return NULL;
-    item = GetItem(list, ind);
-    if (item == NULL) return NULL;
-    if (item->prev != NULL) item->prev->next = item->next;
-    else list->head = item->next;
-    if (item->next != NULL) item->next->prev = item->prev;
-    else list->tail = item->prev;
-    item->prev = NULL;
-    item->next = NULL;
-    return item;
-}
-
-void Delete(List* list, int ind)
-{
-    Item* item = Remove(list, ind);
-    if (item != NULL) free(item);
-}
-
-void Clear(List* list)
-{
-    if (list == NULL) return;
-    while (list->head != NULL) Delete(list, 0);
-}
+#include "list.h"
 
 void PrintList(const List* list)
 {
@@ -208,7 +88,7 @@ void Menu(List* list)
                     break;
                 }
                 Insert(list, item, ind);
-                printf("Операция вставки завершена (если индекс корректный).\n");
+                printf("Операция вставки завершена.\n");
                 break;
             case 3:
                 ind = input_int("Введите индекс: ");
@@ -220,12 +100,12 @@ void Menu(List* list)
                 found = GetItem(list, ind);
                 if (found != NULL)
                 {
-                    printf("Элемент с индексом %d найден.\nАдрес элемента: %p\n", ind, (void*)found);
+                    printf("Элемент с индексом %d найден.\nАдрес: %p\n", ind, (void*)found);
                     printf("Prev: %p\nNext: %p\n", (void*)found->prev, (void*)found->next);
                 }
                 else
                 {
-                    printf("Ошибка: элемент не найден (пустой список или неверный индекс).\n");
+                    printf("Ошибка: элемент не найден.\n");
                 }
                 break;
             case 5:
@@ -233,12 +113,12 @@ void Menu(List* list)
                 item = Remove(list, ind);
                 if (item != NULL)
                 {
-                    printf("Элемент с индексом %d исключен из списка.\nАдрес исключенного элемента: %p\n", ind, (void*)item);
+                    printf("Элемент исключен. Адрес: %p\n", (void*)item);
                     free(item);
                 }
                 else
                 {
-                    printf("Ошибка: элемент не найден (пустой список или неверный индекс).\n");
+                    printf("Ошибка: элемент не найден.\n");
                 }
                 break;
             case 6:
@@ -249,26 +129,26 @@ void Menu(List* list)
                 item = GetItem(list, ind);
                 if (item != NULL)
                 {
-                    printf("Адрес элемента найден, его реальный индекс в списке: %d\n", GetIndex(list, item));
+                    printf("Реальный индекс в списке: %d\n", GetIndex(list, item));
                 }
                 else
                 {
-                    printf("Ошибка: элемент с таким индексом не существует.\n");
+                    printf("Ошибка: элемент не существует.\n");
                 }
                 break;
             case 8:
                 Clear(list);
-                printf("Список полностью очищен.\n");
+                printf("Список очищен.\n");
                 break;
             case 9:
                 PrintList(list);
                 break;
             case 0:
                 Clear(list);
-                printf("Память освобождена. До свидания!\n");
+                printf("До свидания!\n");
                 return;
             default:
-                printf("Ошибка: такого пункта меню нет. Введите число от 0 до 9.\n");
+                printf("Ошибка: такого пункта нет.\n");
         }
     }
 }
@@ -276,7 +156,10 @@ void Menu(List* list)
 int main(void)
 {
     setlocale(LC_ALL, "ru_RU.UTF-8");
-    List myList = {NULL, NULL};
+    List myList =
+    {
+        NULL, NULL
+    };
     Menu(&myList);
     return 0;
 }
