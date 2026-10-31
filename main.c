@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
-#include "list.h"
+#include "subj.h"
 
 void PrintList(const List* list)
 {
@@ -35,60 +35,77 @@ void PrintList(const List* list)
     printf("-----------------------------------------------\n\n");
 }
 
-int input_int(const char* prompt)
+int select_type(void)
 {
-    int value;
-    char buf;
+    int t;
     while (1)
     {
-        printf("%s", prompt);
-        if (scanf("%d%c", &value, &buf) == 2 && buf == '\n') return value;
-        printf("Ошибка ввода! Введите целое число.\n");
-        while (getchar() != '\n');
+        printf("Выберите тип:\n");
+        printf("1. %s\n", TypeName[1]);
+        printf("2. %s\n", TypeName[2]);
+        printf("3. %s\n", TypeName[3]);
+        printf("4. %s\n", TypeName[4]);
+        t = input_int("Ваш выбор: ");
+        if (t >= 1 && t <= 4) return t;
+        printf("Ошибка: неверный тип.\n");
     }
+}
+
+Base* create_obj(void)
+{
+    Base* p = Create((ItemType)select_type());
+    if (p == NULL)
+    {
+        printf("Ошибка: не удалось выделить память.\n");
+        return NULL;
+    }
+    Input(p);
+    return p;
 }
 
 void Menu(List* list)
 {
     int choice, ind;
     Item *item, *found;
+    Base* p;
+    float min_v, max_v;
     while (1)
     {
         printf("\n            ----- Меню -----\n");
-        printf("1. Add       - добавить элемент в конец\n");
-        printf("2. Insert    - вставить элемент по индексу\n");
-        printf("3. Delete    - удалить элемент по индексу\n");
-        printf("4. GetItem   - получить элемент по индексу\n");
-        printf("5. Remove    - исключить элемент по индексу\n");
+        printf("1. Add       - добавить объект в конец\n");
+        printf("2. Insert    - вставить объект по индексу\n");
+        printf("3. Delete    - удалить объект по индексу\n");
+        printf("4. GetItem   - получить объект по индексу\n");
+        printf("5. Remove    - исключить объект по индексу\n");
         printf("6. Count     - посчитать количество элементов\n");
         printf("7. GetIndex  - определить индекс элемента\n");
         printf("8. Clear     - очистить список\n");
-        printf("9. PrintList - показать состояние списка\n");
+        printf("9. PrintList - показать адреса списка\n");
+        printf("10. PrintAll - вывести все объекты\n");
+        printf("11. PrintType- вывести объекты одного типа\n");
+        printf("12. Sort     - сортировать по названию\n");
+        printf("13. Find     - поиск по времени жизни\n");
         printf("0. Выход\n");
         printf("-----------------------------------------------\n");
         choice = input_int("Ваш выбор: ");
         switch (choice)
         {
             case 1:
-                item = (Item*)malloc(sizeof(Item));
-                if (item == NULL)
+                p = create_obj();
+                if (p != NULL)
                 {
-                    printf("Ошибка: не удалось выделить память.\n");
-                    break;
+                    Add(list, (Item*)p);
+                    printf("Объект добавлен в конец списка.\n");
                 }
-                Add(list, item);
-                printf("Элемент успешно добавлен в конец списка.\n");
                 break;
             case 2:
                 ind = input_int("Введите индекс: ");
-                item = (Item*)malloc(sizeof(Item));
-                if (item == NULL)
+                p = create_obj();
+                if (p != NULL)
                 {
-                    printf("Ошибка: не удалось выделить память.\n");
-                    break;
+                    Insert(list, (Item*)p, ind);
+                    printf("Операция вставки завершена.\n");
                 }
-                Insert(list, item, ind);
-                printf("Операция вставки завершена.\n");
                 break;
             case 3:
                 ind = input_int("Введите индекс: ");
@@ -100,8 +117,8 @@ void Menu(List* list)
                 found = GetItem(list, ind);
                 if (found != NULL)
                 {
-                    printf("Элемент с индексом %d найден.\nАдрес: %p\n", ind, (void*)found);
-                    printf("Prev: %p\nNext: %p\n", (void*)found->prev, (void*)found->next);
+                    printf("Элемент с индексом %d найден. Адрес: %p\n", ind, (void*)found);
+                    Print((const Base*)found);
                 }
                 else
                 {
@@ -143,6 +160,21 @@ void Menu(List* list)
             case 9:
                 PrintList(list);
                 break;
+            case 10:
+                PrintAll(list);
+                break;
+            case 11:
+                PrintType(list, (ItemType)select_type());
+                break;
+            case 12:
+                Sort(list);
+                printf("Список отсортирован по названию.\n");
+                break;
+            case 13:
+                min_v = input_float("Минимальное время жизни (в годах): ");
+                max_v = input_float("Максимальное время жизни (в годах): ");
+                Find(list, min_v, max_v);
+                break;
             case 0:
                 Clear(list);
                 printf("До свидания!\n");
@@ -155,7 +187,10 @@ void Menu(List* list)
 
 int main(void)
 {
-    setlocale(LC_ALL, "ru_RU.UTF-8");
+#ifdef WIN32
+    system("chcp 65001");
+#endif
+
     List myList =
     {
         NULL, NULL
