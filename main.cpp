@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <string>
 #include <clocale>
 #ifdef _WIN32
 #include <cstdlib>
@@ -8,21 +9,23 @@
 
 using namespace std;
 
-int inputInt(const char* prompt)
+namespace
 {
-    int value;
-    while (true)
+    int inputInt(const std::string& prompt)
     {
-        cout << prompt;
-        if (cin >> value && cin.peek() == '\n')
+        int value;
+        while (true)
         {
-            cin.ignore();
-            return value;
+            cout << prompt;
+            if (cin >> value)
+            {
+                return value;
+            }
+            if (cin.eof()) return 0;
+            cout << "Ошибка ввода! Введите целое число.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-        if (cin.eof()) return 0;
-        cout << "Ошибка ввода! Введите целое число.\n";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
