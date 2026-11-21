@@ -1,42 +1,57 @@
 #ifndef SUBJ_H
 #define SUBJ_H
 
+#include <string>
 #include "list.h"
 
-typedef enum ItemType
+enum ItemType
 {
     itNone,
     itPlant,
     itFish,
     itBird,
     itAnimal
-} ItemType;
+};
 
-extern const char* const TypeName[];
+extern const std::string TypeName[];
 
-typedef struct Base
+int inputInt(const std::string& prompt);
+float inputFloat(const std::string& prompt);
+
+class Base : public Item
 {
-    struct Item* prev;
-    struct Item* next;
+protected:
     ItemType type;
-    char name[100];
-    char area[100];
+    std::string name;
+    std::string area;
     float temp;
     float hum;
     float life;
     float rep_age;
-} Base;
 
-int input_int(const char* prompt);
-float input_float(const char* prompt);
-void input_str(const char* prompt, char* str, int size);
+    void InputBase();
+    void PrintBase() const;
 
-Base* Create(ItemType t);
-void Input(Base* p);
-void Print(const Base* p);
-void PrintAll(const List* L);
-void PrintType(const List* L, ItemType t);
-void Sort(List* L);
-void Find(const List* L, float min_val, float max_val);
+public:
+    Base(ItemType t = itNone);
+
+    ItemType GetType() const;
+    const std::string& GetName() const;
+    float GetLifeYears() const;
+
+    void Input();
+    void Print() const;
+
+    static Base* Create(ItemType t);
+};
+
+class SubjList : public List
+{
+public:
+    void Print() const;
+    void PrintType(ItemType t) const;
+    void Sort();
+    void Find(float minVal, float maxVal) const;
+};
 
 #endif
